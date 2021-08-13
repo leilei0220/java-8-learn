@@ -9,16 +9,16 @@ import java.util.concurrent.*;
  * @desc
  */
 public class FutureDemo {
-    public static void main(String[] args) throws InterruptedException, ExecutionException, TimeoutException {
+    public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis();
 
         // 写完数学作业
-        Callable<String> ca1 = FutureDemo::writeMathHomeWork;
+        Callable<String> ca1 = SupportService::writeMathHomeWork;
         FutureTask<String> ft1 = new FutureTask<>(ca1);
         new Thread(ft1).start();
 
         // 写完英语作业
-        Callable<String> ca2 = FutureDemo::writeEnglishHomWork;
+        Callable<String> ca2 = SupportService::writeEnglishHomWork;
         FutureTask<String> ft2 = new FutureTask<>(ca2);
         new Thread(ft2).start();
         // .get() 会一直等待下去，其中可以加时间参数,但注意其会抛出超时异常
@@ -32,29 +32,10 @@ public class FutureDemo {
 
         //--------------------------------
         long syncStart = System.currentTimeMillis();
-        System.out.println(writeMathHomeWork());
-        System.out.println(writeEnglishHomWork());
+        System.out.println(SupportService.writeMathHomeWork());
+        System.out.println(SupportService.writeMathHomeWork());
         long syncEnd = System.currentTimeMillis();
         System.out.println("同步写作业一共耗时：" + (syncEnd - syncStart));
 
-    }
-
-    private static String writeEnglishHomWork() {
-        try {
-            Thread.sleep(1000 * 4);
-            throw new RuntimeException("测试打印异常信息!");
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "写完英语作业";
-    }
-
-    private static String writeMathHomeWork() {
-        try {
-            Thread.sleep(1000);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        return "写完数学作业";
     }
 }
