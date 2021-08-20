@@ -66,7 +66,7 @@ public class SupplyAsyncDemo01 {
     public static String getProduct(String name) {
         // 假设此方法 需要远程调用。且有一点耗时
         try {
-            Thread.sleep(2000);
+            Thread.sleep(1000);
             return name.toUpperCase();
         } catch (InterruptedException e) {
             e.printStackTrace();
