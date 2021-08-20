@@ -11,6 +11,7 @@ import java.util.concurrent.CompletableFuture;
  */
 public class CompletableFutureDemo02 {
     public static void main(String[] args) {
+        // supplyAsync 最后可以使用 join 方法拿到返回值
         CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
             System.out.println("CompletableFuture当前线程" + Thread.currentThread().getName());
             return SupportService.writeEnglishHomWorkNoEx();
