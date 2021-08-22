@@ -1,10 +1,11 @@
-package future;
+package comple_table_future.supply.demo;
 
 
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.Collectors;
 
@@ -22,7 +23,8 @@ public class SupplyAsyncDemo01 {
 
     public static void main(String[] args) {
         // 模拟商品名列表
-        List<String> proNameList = Arrays.asList("pp", "dd", "cc", "ee","xx","ff","max","dd","qq");
+        List<String> proNameList = Arrays.asList("pp", "dd", "cc", "ee", "xx", "ff", "max", "dd", "qq",
+                "pp", "dd", "cc", "ee", "xx", "ff", "max", "dd", "qq");
 
         // 普通stream 耗时 测试 串行化 一个一个执行
         long start = System.currentTimeMillis();
@@ -31,35 +33,54 @@ public class SupplyAsyncDemo01 {
                 .collect(Collectors.toList());
         System.out.println(collect);
         long end = System.currentTimeMillis();
-        System.out.println(end - start);
+        System.out.println("stream:   " + (end - start));
 
         /**
          * parallelStream 耗时测试 底层forkJoin线程池数量是是cpu核心数个..一旦任务数量超过核心数，多余的仍要等核心线程空出来再执行
          * 本机器为8核
          * 上方集合有9个元素 ,假设每次请求getProduct都耗时一秒
-         * 那么我们9个元素，程序至少要耗时2秒 （8个并行耗时一秒)+(剩余的元素等待线程执行完毕执行，耗时一秒)
+         * 那么我们9个元素，程序至少要耗时2秒 （8个并行耗时一秒)+(剩余的元素等待其中一个线程执行完毕后再用空闲线程执行，耗时一秒)
          */
         long startParallel = System.currentTimeMillis();
-        List<String> collectParallel = proNameList.parallelStream().map(SupplyAsyncDemo01::getProduct)
+        List<String> collectParallel = proNameList.parallelStream()
+                .map(SupplyAsyncDemo01::getProduct)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         System.out.println(collectParallel);
         long endParallel = System.currentTimeMillis();
-        System.out.println(endParallel - startParallel);
+        System.out.println("parallelStream:   " + (endParallel - startParallel));
 
-        // stream + 使用CompletableFuture实现  CompletableFuture与并行相比的优势是我们可以自定义线程池
+        // 使用CompletableFuture实现
         long startCompletable = System.currentTimeMillis();
+        // 执行异步任务
         List<CompletableFuture<String>> completableFutureList = proNameList.stream()
-                .map(e -> CompletableFuture.supplyAsync(() -> getProduct(e),
-                        // 尽量不使用这种方式创建线程池
-                        Executors.newWorkStealingPool(10)))
-                .collect(Collectors.toList());
-        List<String> strings = completableFutureList.stream().map(CompletableFuture::join)
+                .map(e -> CompletableFuture.supplyAsync(() -> getProduct(e))).collect(Collectors.toList());
+        // 获取异步任务结果
+        List<String> strings = completableFutureList.stream()
+                .map(CompletableFuture::join)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
         System.out.println(strings);
         long endCompletable = System.currentTimeMillis();
-        System.out.println(endCompletable - startCompletable);
+        System.out.println("completableFuture:   " + (endCompletable - startCompletable));
+
+        // stream + 使用CompletableFuture实现  CompletableFuture与并行相比的优势是我们可以自定义线程池
+        long startCompletableAndThreadPool = System.currentTimeMillis();
+        // fixme 根据阿里规约 建议真实开发时使用 ThreadPoolExecutor 定义线程池
+        ExecutorService threadPool = Executors.newFixedThreadPool(proNameList.size());
+        // 执行异步任务
+        List<CompletableFuture<String>> futures = proNameList.stream()
+                .map(e -> CompletableFuture.supplyAsync(() -> getProduct(e), threadPool))
+                .collect(Collectors.toList());
+
+        // 获取异步任务结果
+        List<String> stringList = futures.stream()
+                .map(CompletableFuture::join)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
+        System.out.println(stringList);
+        long endCompletableAndThreadPool = System.currentTimeMillis();
+        System.out.println("completableFuture-threadPool:   " + (endCompletableAndThreadPool - startCompletableAndThreadPool));
     }
 
 
