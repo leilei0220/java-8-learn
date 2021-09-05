@@ -21,24 +21,33 @@ public class LambdaMain {
         Consumer consumer = System.out::println;
         List<Integer> integers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
         // 40 50 60 70 80 90 100
-        integers.stream().filter(x -> x > 3).sorted().map(x -> x * 10).forEach(e->System.out.print(e+ " "));
+        integers.stream().filter(x -> x > 3).sorted().map(x -> x * 10).forEach(e -> System.out.print(e + " "));
+        System.out.println("-----");
 
         // 40 50 60 70 80 90 100
         myForeach(myMap(myFilter(integers, x -> x > 3), x -> x * 10), e -> System.out.print(e + " "));
-
+        System.out.println("-----");
+        myForeachFunction(integers, x -> {
+            StringBuilder builder = new StringBuilder();
+            for (int i = 0; i < x; i++) {
+                builder.append("*");
+            }
+            System.out.println(builder);
+        });
     }
 
     /**
      * 自定义数据映射
+     *
      * @param list
      * @param function
      * @param <R>
      * @param <T>
      * @return
      */
-    public static <R, T> List<R> myMap(List<T> list, Function<T,R> function) {
+    public static <R, T> List<R> myMap(List<T> list, Function<T, R> function) {
         List<R> result = new ArrayList<>();
-        for (T ele: list) {
+        for (T ele : list) {
             R r = function.apply(ele);
             result.add(r);
         }
@@ -47,6 +56,7 @@ public class LambdaMain {
 
     /**
      * 自定义数据过滤
+     *
      * @param list
      * @param predicate
      * @param <T>
@@ -65,6 +75,7 @@ public class LambdaMain {
 
     /**
      * 自定义循环
+     *
      * @param list
      * @param consumer
      * @param <T>
@@ -75,4 +86,16 @@ public class LambdaMain {
         }
     }
 
+    /**
+     * 自定义循环
+     *
+     * @param list
+     * @param function
+     * @param <T>
+     */
+    public static <T> void myForeachFunction(List<T> list, MyApplyFunction<T> function) {
+        for (T ele : list) {
+            function.apply(ele);
+        }
+    }
 }

@@ -14,6 +14,7 @@ public class CompletableFutureDemo01 {
         new Thread(() -> {
             try {
                 // 成功执行,将结果赋值给future
+                System.out.println(Thread.currentThread().getName());
                 String result = SupportService.writeEnglishHomWork() + SupportService.writeMathHomeWork();
                 future.complete(result);
             } catch (Exception ex) {
